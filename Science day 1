@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 10 Science - 80 MCQ Quiz</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --bg: #f4f7f6;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        #quiz-wrapper { max-width: 850px; width: 100%; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
+        #timer-box { font-size: 1.5rem; font-weight: bold; color: var(--danger); text-align: center; position: sticky; top: 0; background: white; padding: 12px; z-index: 1000; border: 2px solid var(--danger); border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .q-card { background: #fff; padding: 20px; margin-bottom: 25px; border-radius: 10px; border: 1px solid #ddd; border-left: 6px solid var(--primary); transition: 0.3s; }
+        .q-text { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; display: block; color: #333; }
+        .option { display: block; width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem; text-align: left; transition: 0.2s; }
+        .option:hover:not(.locked) { background-color: #f8f9fa; border-color: var(--primary); }
+        .correct { background-color: var(--success) !important; color: white !important; border-color: #1e8449 !important; }
+        .wrong { background-color: var(--danger) !important; color: white !important; border-color: #c0392b !important; }
+        .locked { pointer-events: none; }
+        .explanation { display: none; margin-top: 15px; padding: 12px; background: #eef7ff; border-radius: 6px; font-style: italic; color: #2c3e50; border-left: 4px solid var(--info); font-size: 0.95rem; }
+        
+        #final-screen, #certificate-display { display: none; text-align: center; padding: 40px; }
+        #certificate-display { border: 15px double var(--primary); background: #fff; margin-top: 20px; padding: 50px; position: relative; }
+        .btn-large { background: var(--primary); color: white; padding: 16px 35px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 25px; font-weight: bold; }
+        .btn-large:hover { opacity: 0.9; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #certificate-display, #certificate-display * { visibility: visible; }
+            #certificate-display { position: absolute; left: 0; top: 0; width: 100%; border: 5px solid #000; }
+            .no-print { display: none; }
+        }
+        @media (max-width: 600px) { #certificate-display { padding: 20px; border-width: 8px; } }
+    </style>
+</head>
+<body>
+
+<div id="quiz-wrapper">
+    <div id="quiz-ui">
+        <div class="header">
+            <h1>विज्ञान (Science) मेगा क्विज़</h1>
+            <p>कुल प्रश्न: 80 | समय: 60 मिनट</p>
+        </div>
+        <div id="timer-box">समय शेष: 60:00</div>
+        <div id="questions-list"></div>
+    </div>
+
+    <div id="final-screen">
+        <h2 style="color: var(--success); font-size: 2.5rem;">शानदार! परीक्षा समाप्त</h2>
+        <p id="final-score-text" style="font-size: 2rem; font-weight: bold; margin: 20px 0;"></p>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; border: 1px solid #ddd;">
+            <p style="font-size: 1.2rem;">सर्टिफिकेट के लिए अपना नाम दर्ज करें:</p>
+            <input type="text" id="studentName" placeholder="यहाँ अपना नाम लिखें" style="padding: 15px; width: 90%; max-width: 400px; border-radius: 8px; border: 2px solid #ccc; font-size: 1.1rem;"><br>
+            <button class="btn-large" onclick="renderCertificate()">सर्टिफिकेट प्राप्त करें</button>
+        </div>
+    </div>
+
+    <div id="certificate-display">
+        <h1 style="color: #b8860b; font-size: 3.5rem; margin: 0; font-family: serif;">प्रमाण पत्र</h1>
+        <p style="font-size: 1.4rem; margin-top: 20px;">यह प्रमाणित किया जाता है कि</p>
+        <h2 id="cert-user-name" style="font-size: 2.8rem; text-decoration: underline; margin: 20px 0; color: #333;"></h2>
+        <p style="font-size: 1.3rem;">ने <b>"कक्षा 10 विज्ञान (80 MCQ)"</b> की ऑनलाइन परीक्षा <br> सफलतापूर्वक पूर्ण की।</p>
+        <div style="margin: 35px 0; padding: 20px; background: #f0f0f0; border-radius: 10px; display: inline-block;">
+            <span style="font-size: 1.5rem;">कुल स्कोर: <strong id="cert-score"></strong> / 80</span><br>
+            <span style="font-size: 1.5rem;">प्रतिशत: <strong id="cert-percent"></strong>%</span>
+        </div>
+        <p style="font-size: 1.1rem; margin-top: 30px;">जारी करने की तिथि: <span id="cert-date"></span></p>
+        <button class="btn-large no-print" onclick="window.print()" style="background: #27ae60;">सर्टिफिकेट प्रिंट / PDF सेव करें</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {q: "मानव नेत्र में प्रतिमा किस भाग पर बनती है?", o: ["कॉर्निया", "रेटिना", "पुतली", "लेंस"], a: 1, e: "रेटिना पर वस्तु की वास्तविक उल्टी प्रतिमा बनती है।"},
+        {q: "अम्ल का स्वाद कैसा होता है?", o: ["मीठा", "खट्टा", "कड़वा", "नमकीन"], a: 1, e: "अम्लों का स्वाद सामान्यतः खट्टा होता है।"},
+        {q: "विद्युत धारा की SI इकाई क्या है?", o: ["वोल्ट", "एम्पियर", "ओम", "जूल"], a: 1, e: "विद्युत धारा को एम्पियर में मापा जाता है।"},
+        {q: "प्रकाश संश्लेषण के लिए आवश्यक गैस कौन-सी है?", o: ["ऑक्सीजन", "नाइटोजन", "कार्बन डाइऑक्साइड", "हाइड्रोजन"], a: 2, e: "पौधे CO₂ लेकर भोजन बनाते हैं।"},
+        {q: "pH = 7 वाला विलयन कैसा होता है?", o: ["अम्लीय", "क्षारीय", "उदासीन", "लवणीय"], a: 2, e: "pH 7 उदासीन विलयन दर्शाता है।"},
+        {q: "समतल दर्पण में प्रतिबिंब कैसा होता है?", o: ["वास्तविक", "आभासी", "उल्टा", "छोटा"], a: 1, e: "समतल दर्पण आभासी और सीधा प्रतिबिंब बनाता है।"},
+        {q: "रक्त का लाल रंग किसके कारण होता है?", o: ["प्लाज्मा", "प्लेटलेट", "हीमोग्लोबिन", "श्वेत रक्त कण"], a: 2, e: "हीमोग्लोबिन में लौह तत्व होने से रक्त लाल दिखता है।"},
+        {q: "धातुएँ सामान्यतः कैसी होती हैं?", o: ["भंगुर", "तन्य", "कुचालक", "अधातु"], a: 1, e: "धातुओं को तार के रूप में खींचा जा सकता है।"},
+        {q: "ओम का नियम किस संबंध को दर्शाता है?", o: ["V ∝ I", "V ∝ R", "I ∝ R", "R ∝ V"], a: 0, e: "नियत ताप पर विभवान्तर धारा के समानुपाती होता है।"},
+        {q: "हरित लवक में कौन-सा वर्णक पाया जाता है?", o: ["क्लोरोफिल", "अम्ल", "हीमोग्लोबिन", "क्षार"], a: 0, e: "क्लोरोफिल सूर्य के प्रकाश को अवशोषित करता है।"},
+        {q: "अम्ल में नीला लिटमस कैसा हो जाता है?", o: ["लाल", "नीला", "हरा", "पीला"], a: 0, e: "अम्ल नीले लिटमस को लाल कर देता है।"},
+        {q: "प्रतिरोध की इकाई क्या है?", o: ["वाट", "वोल्ट", "ओम", "जूल"], a: 2, e: "प्रतिरोध को ओम (Ω) में मापा जाता है।"},
+        {q: "मानव हृदय में कितने कक्ष होते हैं?", o: ["2", "3", "4", "5"], a: 2, e: "हृदय में दो आलिंद और दो निलय होते हैं।"},
+        {q: "कार्बन का परमाणु क्रमांक क्या है?", o: ["4", "6", "8", "12"], a: 1, e: "कार्बन के नाभिक में 6 प्रोटॉन होते हैं।"},
+        {q: "उत्तल दर्पण में प्रतिबिंब कैसा होता है?", o: ["वास्तविक", "आभासी", "बड़ा", "उल्टा"], a: 1, e: "उत्तल दर्पण सदैव छोटा और आभासी प्रतिबिंब देता है।"},
+        {q: "श्वसन क्रिया का मुख्य उत्पाद क्या है?", o: ["ऑक्सीजन", "कार्बन डाइऑक्साइड", "नाइट्रोजन", "मीथेन"], a: 1, e: "कोशकीय श्वसन से CO₂ उत्पन्न होती है।"},
+        {q: "धातु ऑक्सीजन से मिलकर क्या बनाती है?", o: ["अम्ल", "क्षार", "ऑक्साइड", "लवण"], a: 2, e: "धातुएँ ऑक्सीजन से अभिक्रिया कर धात्विक ऑक्साइड बनाती हैं।"},
+        {q: "विद्युत शक्ति की इकाई क्या है?", o: ["जूल", "वोल्ट", "वाट", "ओम"], a: 2, e: "विद्युत शक्ति को वाट में मापा जाता है।"},
+        {q: "आनुवंशिकता का जनक किसे माना जाता है?", o: ["डार्विन", "न्यूटन", "मेंडल", "आइंस्टीन"], a: 2, e: "ग्रेगर मेंडल ने वंशागति के नियम दिए।"},
+        {q: "सोडियम जल से अभिक्रिया कर क्या बनाता है?", o: ["हाइड्रोजन", "ऑक्सीजन", "कार्बन डाइऑक्साइड", "नाइट्रोजन"], a: 0, e: "सोडियम जल से मिलकर NaOH और H₂ बनाता है।"},
+        {q: "परावर्तन के कितने नियम हैं?", o: ["1", "2", "3", "4"], a: 1, e: "परावर्तन के दो मूल नियम होते हैं।"},
+        {q: "रक्त का द्रव भाग क्या कहलाता है?", o: ["RBC", "WBC", "प्लेटलेट", "प्लाज्मा"], a: 3, e: "प्लाज्मा रक्त का तरल भाग है।"},
+        {q: "सबसे हल्की धातु कौन-सी है?", o: ["सोडियम", "पोटैशियम", "लिथियम", "मैग्नीशियम"], a: 2, e: "लिथियम सबसे हल्की धातु मानी जाती है।"},
+        {q: "विद्युत धारा के तापीय प्रभाव की खोज किसने की?", o: ["जूल", "ओम", "फैराडे", "न्यूटन"], a: 0, e: "जूल ने विद्युत धारा के तापीय प्रभाव का अध्ययन किया।"},
+        {q: "DNA कहाँ पाया जाता है?", o: ["केंद्रक", "कोशिका झिल्ली", "साइटोप्लाज्म", "राइबोसोम"], a: 0, e: "DNA मुख्यतः कोशिका के केंद्रक में पाया जाता है।"},
+        {q: "अम्ल और क्षार की अभिक्रिया से क्या बनता है?", o: ["गैस", "जल", "लवण", "जल और लवण"], a: 3, e: "इसे उदासीनीकरण अभिक्रिया कहते हैं।"},
+        {q: "फ्यूज तार किस धातु से बना होता है?", o: ["ताँबा", "लोहा", "सीसा-टिन मिश्रधातु", "एल्युमिनियम"], a: 2, e: "इसका गलनांक कम होता है इसलिए सुरक्षा में उपयोग होता है।"},
+        {q: "प्रकाश का अपवर्तन कब होता है?", o: ["दर्पण में", "माध्यम बदलने पर", "शून्य में", "निर्वात में"], a: 1, e: "माध्यम बदलने पर प्रकाश की चाल बदलती है।"},
+        {q: "पौधों में गैसों का आदान-प्रदान कहाँ होता है?", o: ["जाइलम", "फ्लोएम", "रंध्र", "मूल"], a: 2, e: "पत्तियों के रंध्र गैस विनिमय करते हैं।"},
+        {q: "क्षार का स्वाद कैसा होता है?", o: ["खट्टा", "कड़वा", "मीठा", "नमकीन"], a: 1, e: "क्षार सामान्यतः कड़वे स्वाद के होते हैं।"},
+        {q: "लेंस की शक्ति की इकाई क्या है?", o: ["डायोप्टर", "जूल", "वाट", "ओम"], a: 0, e: "लेंस की शक्ति डायोप्टर में मापी जाती है।"},
+        {q: "मानव नेत्र में दृष्टि दोष का कारण क्या है?", o: ["रेटिना", "लेंस की फोकस दूरी", "पुतली", "कॉर्निया"], a: 1, e: "फोकस दूरी में परिवर्तन से दृष्टिदोष होता है।"},
+        {q: "pH का मान 7 से कम होने पर विलयन कैसा होगा?", o: ["अम्लीय", "क्षारीय", "उदासीन", "लवणीय"], a: 0, e: "pH 7 से कम अम्लीय विलयन दर्शाता है।"},
+        {q: "तन्यता किसका गुण है?", o: ["धातु", "अधातु", "गैस", "लवण"], a: 0, e: "धातुओं को तार के रूप में खींचा जा सकता है।"},
+        {q: "विद्युत ऊर्जा की इकाई क्या है?", o: ["जूल", "वाट", "ओम", "वोल्ट"], a: 0, e: "ऊर्जा को जूल में मापा जाता है।"},
+        {q: "श्वसन क्रिया कोशिका के किस भाग में होती है?", o: ["माइटोकॉन्ड्रिया", "केंद्रक", "झिल्ली", "राइबोसोम"], a: 0, e: "माइटोकॉन्ड्रिया को ऊर्जा घर कहा जाता है।"},
+        {q: "अम्ल वर्षा का मुख्य कारण क्या है?", o: ["SO₂", "O₂", "N₂", "H₂"], a: 0, e: "सल्फर डाइऑक्साइड अम्ल वर्षा का कारण है।"},
+        {q: "चुंबकीय प्रभाव की खोज किसने की?", o: ["ओम", "ओर्स्टेड", "जूल", "फैराडे"], a: 1, e: "ओर्स्टेड ने विद्युत धारा के चुंबकीय प्रभाव की खोज की।"},
+        {q: "रक्त का थक्का किससे बनता है?", o: ["RBC", "WBC", "प्लेटलेट", "प्लाज्मा"], a: 2, e: "प्लेटलेट रक्त का थक्का बनाते हैं।"},
+        {q: "कार्बन के अपरूप कौन-कौन से हैं?", o: ["हीरा", "ग्रेफाइट", "फुलरीन", "सभी"], a: 3, e: "ये सभी कार्बन के अपरूप हैं।"},
+        {q: "उत्तल लेंस किस प्रकार का प्रतिबिंब बना सकता है?", o: ["वास्तविक", "आभासी", "दोनों", "कोई नहीं"], a: 2, e: "वस्तु की स्थिति पर निर्भर करता है।"},
+        {q: "उदासीन विलयन का pH मान क्या है?", o: ["7", "5", "9", "1"], a: 0, e: "pH 7 उदासीन विलयन दर्शाता है।"},
+        {q: "विद्युत धारा मापने का यंत्र क्या है?", o: ["वोल्टमीटर", "एमीटर", "गैल्वेनोमीटर", "बैरोमीटर"], a: 1, e: "एमीटर धारा मापता है।"},
+        {q: "आनुवंशिक लक्षण का वाहक क्या है?", o: ["जीन", "कोशिका", "ऊतक", "अंग"], a: 0, e: "जीन वंशानुगत लक्षणों का वाहक है।"},
+        {q: "NaCl किस प्रकार का यौगिक है?", o: ["अम्ल", "क्षार", "लवण", "गैस"], a: 2, e: "सोडियम क्लोराइड एक लवण है।"},
+        {q: "आपतन कोण बराबर होता है —", o: ["अपवर्तन कोण", "परावर्तन कोण", "90°", "45°"], a: 1, e: "आपतन कोण = परावर्तन कोण।"},
+        {q: "प्रकाश संश्लेषण का उपउत्पाद क्या है?", o: ["ऑक्सीजन", "CO₂", "H₂", "N₂"], a: 0, e: "प्रकाश संश्लेषण से O₂ निकलती है।"},
+        {q: "प्रतिरोध किन पर निर्भर करता है?", o: ["लंबाई", "क्षेत्रफल", "पदार्थ", "सभी"], a: 3, e: "ये सभी कारक प्रतिरोध को प्रभावित करते हैं।"},
+        {q: "मानव में श्वसन अंग कौन-सा है?", o: ["हृदय", "फेफड़ा", "यकृत", "गुर्दा"], a: 1, e: "फेफड़े गैस विनिमय करते हैं।"},
+        {q: "धातु अम्ल से मिलकर क्या बनाती है?", o: ["गैस", "लवण", "जल", "गैस और लवण"], a: 3, e: "हाइड्रोजन गैस और लवण बनता है।"},
+        {q: "वोल्ट किसका मात्रक है?", o: ["धारा", "विभवान्तर", "शक्ति", "ऊर्जा"], a: 1, e: "विभवान्तर को वोल्ट में मापा जाता है।"},
+        {q: "प्रकाश का प्रकीर्णन किस कारण होता है?", o: ["कण", "धूल", "वायु", "सभी"], a: 3, e: "सूक्ष्म कण प्रकाश को बिखेरते हैं।"},
+        {q: "लेंस से गुजरने पर प्रकाश क्या करता है?", o: ["मुड़ता है", "सीधा जाता है", "रुकता है", "टूटता है"], a: 0, e: "इसे अपवर्तन कहते हैं।"},
+        {q: "क्लोरोफिल कहाँ पाया जाता है?", o: ["पत्ती", "जड़", "तना", "फूल"], a: 0, e: "पत्तियों में हरित लवक होता है।"},
+        {q: "इलेक्ट्रॉन पर कैसा आवेश होता है?", o: ["धन", "ऋण", "शून्य", "दोनों"], a: 1, e: "इलेक्ट्रॉन पर ऋणात्मक आवेश होता है।"},
+        {q: "धातु की चमक को क्या कहते हैं?", o: ["धात्विक चमक", "भंगुरता", "कुचालकता", "तन्यता"], a: 0, e: "धातुएँ चमकदार होती हैं।"},
+        {q: "मानव में कुल गुणसूत्रों की संख्या कितनी है?", o: ["23", "46", "44", "92"], a: 1, e: "मानव में 23 जोड़े यानी 46 गुणसूत्र होते हैं।"},
+        {q: "जल का रासायनिक सूत्र क्या है?", o: ["H₂O", "CO₂", "O₂", "HCl"], a: 0, e: "जल दो हाइड्रोजन और एक ऑक्सीजन से बनता है।"},
+        {q: "विद्युत परिपथ में स्विच का कार्य क्या है?", o: ["जोड़ना/तोड़ना", "मापना", "बढ़ाना", "घटाना"], a: 0, e: "स्विच धारा के प्रवाह को नियंत्रित करता है।"},
+        {q: "रेटिना पर बनने वाली प्रतिमा कैसी होती है?", o: ["सीधी", "उल्टी", "बड़ी", "छोटी"], a: 1, e: "रेटिना पर उल्टी प्रतिमा बनती है।"},
+        {q: "रक्त समूह की खोज किसने की?", o: ["लैंडस्टीनर", "मेंडल", "न्यूटन", "डार्विन"], a: 0, e: "उन्होंने ABO रक्त समूह प्रणाली खोजी।"},
+        {q: "ताँबा किस प्रकार का तत्व है?", o: ["धातु", "अधातु", "गैस", "अम्ल"], a: 0, e: "ताँबा एक चालक धातु है।"},
+        {q: "बैटरी में ऊर्जा किस रूप में होती है?", o: ["रासायनिक", "प्रकाश", "ध्वनि", "नाभिकीय"], a: 0, e: "बैटरी रासायनिक ऊर्जा को विद्युत में बदलती है।"},
+        {q: "कोशिका क्या है?", o: ["जीवन की मूल इकाई", "ऊतक", "अंग", "तंत्र"], a: 0, e: "कोशिका जीवों की संरचनात्मक इकाई है।"},
+        {q: "अमोनिया किस प्रकार का पदार्थ है?", o: ["अम्ल", "क्षार", "लवण", "गैस"], a: 1, e: "अमोनिया जल में घुलकर क्षारीय घोल बनाती है।"},
+        {q: "प्रतिरोध कब बढ़ेगा?", o: ["लंबाई बढ़ने पर", "क्षेत्रफल बढ़ने पर", "ताप घटने पर", "कोई नहीं"], a: 0, e: "तार की लंबाई बढ़ने से प्रतिरोध बढ़ता है।"},
+        {q: "पौधे किस प्रकार के जीव हैं?", o: ["स्वपोषी", "परपोषी", "परजीवी", "अपघटक"], a: 0, e: "पौधे स्वयं भोजन बनाते हैं।"},
+        {q: "सोडियम किस प्रकार का तत्व है?", o: ["धातु", "अधातु", "गैस", "अम्ल"], a: 0, e: "सोडियम एक क्षारीय धातु है।"},
+        {q: "जूल किसका मात्रक है?", o: ["ऊर्जा", "शक्ति", "धारा", "प्रतिरोध"], a: 0, e: "ऊर्जा को जूल में मापा जाता है।"},
+        {q: "अवलत दर्पण किस प्रकार का प्रतिबिंब दे सकता है?", o: ["वास्तविक", "आभासी", "दोनों", "कोई नहीं"], a: 2, e: "वस्तु की स्थिति पर निर्भर करता है।"},
+        {q: "पित्त रस कहाँ बनता है?", o: ["यकृत", "हृदय", "गुर्दा", "फेफड़ा"], a: 0, e: "यकृत पित्त रस का निर्माण करता है।"},
+        {q: "कार्बन की संयोजकता कितनी है?", o: ["2", "4", "6", "8"], a: 1, e: "कार्बन की संयोजकता 4 होती है।"},
+        {q: "फ्यूज का मुख्य कार्य क्या है?", o: ["सुरक्षा", "प्रकाश", "मापन", "वृद्धि"], a: 0, e: "अधिक धारा होने पर फ्यूज पिघल जाता है।"},
+        {q: "श्वेत रक्त कण किससे लड़ते हैं?", o: ["संक्रमण", "ऑक्सीजन", "जल", "भोजन"], a: 0, e: "WBC शरीर को रोगों से बचाते हैं।"},
+        {q: "CO₂ किस प्रकार का पदार्थ है?", o: ["गैस", "अम्ल", "क्षार", "धातु"], a: 0, e: "कार्बन डाइऑक्साइड एक गैस है।"},
+        {q: "परावर्तन में किरणें किस तल में होती हैं?", o: ["एक ही तल में", "अलग-अलग तल में", "वृत्ताकार", "शून्य"], a: 0, e: "आपतन, परावर्तन किरण व अभिलंब एक ही तल में होते हैं।"},
+        {q: "तंत्रिका संकेत किस रूप में चलता है?", o: ["विद्युत", "रासायनिक", "दोनों", "कोई नहीं"], a: 2, e: "तंत्रिका संदेश विद्युत व रासायनिक दोनों रूप में चलता है।"},
+        {q: "लोहे में जंग लगने के लिए क्या आवश्यक है?", o: ["O₂ और H₂O", "CO₂", "N₂", "HCl"], a: 0, e: "नमी और ऑक्सीजन से जंग लगती है।"},
+        {q: "बल्ब का तंतु किस धातु का होता है?", o: ["टंगस्टन", "लोहा", "ताँबा", "एल्युमिनियम"], a: 0, e: "टंगस्टन का गलनांक अधिक होता है।"},
+        {q: "मानव नेत्र की समायोजन क्षमता को क्या कहते हैं?", o: ["समंजन", "परावर्तन", "अपवर्तन", "प्रकीर्णन"], a: 0, e: "नेत्र विभिन्न दूरियों की वस्तु पर फोकस कर सकता है।"}
+    ];
+
+    let score = 0, answeredCount = 0, secondsLeft = 3600; // 60 minutes
+    let timerId;
+
+    // Load Quiz
+    function loadQuiz() {
+        const listContainer = document.getElementById('questions-list');
+        questions.forEach((data, index) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+            card.innerHTML = `
+                <span class="q-text">${index + 1}. ${data.q}</span>
+                <div id="qgroup-${index}">
+                    ${data.o.map((opt, optIdx) => `
+                        <button class="option" onclick="handleSelect(${index}, ${optIdx})">${opt}</button>
+                    `).join('')}
+                </div>
+                <div id="expl-${index}" class="explanation">व्याख्या: ${data.e}</div>
+            `;
+            listContainer.appendChild(card);
+        });
+        startClock();
+    }
+
+    function handleSelect(qIdx, selectedIdx) {
+        const group = document.getElementById(`qgroup-${qIdx}`);
+        const buttons = group.getElementsByClassName('option');
+        const correctIdx = questions[qIdx].a;
+
+        if (selectedIdx === correctIdx) {
+            buttons[selectedIdx].classList.add('correct');
+            score++;
+        } else {
+            buttons[selectedIdx].classList.add('wrong');
+            buttons[correctIdx].classList.add('correct');
+        }
+
+        // Show Explanation
+        document.getElementById(`expl-${qIdx}`).style.display = 'block';
+
+        // Lock buttons
+        for (let btn of buttons) btn.classList.add('locked');
+        
+        answeredCount++;
+        if (answeredCount === questions.length) stopAndShowResult();
+    }
+
+    function startClock() {
+        timerId = setInterval(() => {
+            secondsLeft--;
+            let m = Math.floor(secondsLeft / 60);
+            let s = secondsLeft % 60;
+            document.getElementById('timer-box').innerText = `समय शेष: ${m}:${s < 10 ? '0' + s : s}`;
+            if (secondsLeft <= 0) stopAndShowResult();
+        }, 1000);
+    }
+
+    function stopAndShowResult() {
+        clearInterval(timerId);
+        document.getElementById('quiz-ui').style.display = 'none';
+        document.getElementById('final-screen').style.display = 'block';
+        document.getElementById('final-score-text').innerText = `आपका स्कोर: ${score} / 80`;
+    }
+
+    function renderCertificate() {
+        const name = document.getElementById('studentName').value;
+        if (!name) return alert("नाम दर्ज करना आवश्यक है!");
+        document.getElementById('final-screen').style.display = 'none';
+        document.getElementById('certificate-display').style.display = 'block';
+        document.getElementById('cert-user-name').innerText = name;
+        document.getElementById('cert-score').innerText = score;
+        document.getElementById('cert-percent').innerText = ((score / 80) * 100).toFixed(1);
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString('hi-IN');
+    }
+
+    // Start everything
+    loadQuiz();
+</script>
+
+</body>
+</html>
