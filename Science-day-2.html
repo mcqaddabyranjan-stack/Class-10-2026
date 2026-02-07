@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 2 - Science 80 MCQ Quiz</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --bg: #f4f7f6;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        #quiz-wrapper { max-width: 850px; width: 100%; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
+        #timer-box { font-size: 1.5rem; font-weight: bold; color: var(--danger); text-align: center; position: sticky; top: 0; background: white; padding: 12px; z-index: 1000; border: 2px solid var(--danger); border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .q-card { background: #fff; padding: 20px; margin-bottom: 25px; border-radius: 10px; border: 1px solid #ddd; border-left: 6px solid var(--primary); }
+        .q-text { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; display: block; color: #333; }
+        .option { display: block; width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem; text-align: left; transition: 0.2s; }
+        .option:hover:not(.locked) { background-color: #f8f9fa; border-color: var(--primary); }
+        .correct { background-color: var(--success) !important; color: white !important; border-color: #1e8449 !important; }
+        .wrong { background-color: var(--danger) !important; color: white !important; border-color: #c0392b !important; }
+        .locked { pointer-events: none; }
+        .explanation { display: none; margin-top: 15px; padding: 12px; background: #eef7ff; border-radius: 6px; font-style: italic; color: #2c3e50; border-left: 4px solid var(--info); font-size: 0.95rem; }
+        
+        #final-screen, #certificate-display { display: none; text-align: center; padding: 40px; }
+        #certificate-display { border: 15px double var(--primary); background: #fff; margin-top: 20px; padding: 50px; position: relative; }
+        .btn-large { background: var(--primary); color: white; padding: 16px 35px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 25px; font-weight: bold; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #certificate-display, #certificate-display * { visibility: visible; }
+            #certificate-display { position: absolute; left: 0; top: 0; width: 100%; border: 5px solid #000; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-wrapper">
+    <div id="quiz-ui">
+        <div class="header">
+            <h1>Day 2 - विज्ञान मेगा क्विज़</h1>
+            <p>विद्युत धारा का चुंबकीय प्रभाव + कार्बन + आनुवंशिकता</p>
+        </div>
+        <div id="timer-box">समय शेष: 60:00</div>
+        <div id="questions-list"></div>
+    </div>
+
+    <div id="final-screen">
+        <h2 style="color: var(--success); font-size: 2.5rem;">Day 2 क्विज़ समाप्त!</h2>
+        <p id="final-score-text" style="font-size: 2rem; font-weight: bold; margin: 20px 0;"></p>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; border: 1px solid #ddd;">
+            <p style="font-size: 1.2rem;">सर्टिफिकेट के लिए अपना नाम लिखें:</p>
+            <input type="text" id="studentName" placeholder="पूरा नाम यहाँ लिखें" style="padding: 15px; width: 90%; max-width: 400px; border-radius: 8px; border: 2px solid #ccc; font-size: 1.1rem;"><br>
+            <button class="btn-large" onclick="renderCertificate()">सर्टिफिकेट देखें</button>
+        </div>
+    </div>
+
+    <div id="certificate-display">
+        <h1 style="color: #b8860b; font-size: 3.5rem; margin: 0; font-family: serif;">सफलता प्रमाण पत्र</h1>
+        <p style="font-size: 1.4rem; margin-top: 20px;">यह प्रमाणित किया जाता है कि</p>
+        <h2 id="cert-user-name" style="font-size: 2.8rem; text-decoration: underline; margin: 20px 0; color: #333;"></h2>
+        <p style="font-size: 1.3rem;">ने <b>"Day 2 - विज्ञान मेगा क्विज़"</b> को सफलतापूर्वक पूर्ण किया।</p>
+        <div style="margin: 35px 0; padding: 20px; background: #f0f0f0; border-radius: 10px; display: inline-block;">
+            <span style="font-size: 1.5rem;">प्राप्तांक: <strong id="cert-score"></strong> / 80</span><br>
+            <span style="font-size: 1.5rem;">प्रतिशत: <strong id="cert-percent"></strong>%</span>
+        </div>
+        <p style="font-size: 1.1rem; margin-top: 30px;">दिनांक: <span id="cert-date"></span></p>
+        <button class="btn-large no-print" onclick="window.print()" style="background: #27ae60;">सर्टिफिकेट डाउनलोड / प्रिंट करें</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        // Physics: Magnetic Effect (1-26)
+        {q: "धारा वहन करने वाले चालक के चारों ओर चुंबकीय क्षेत्र किस रूप में होता है?", o: ["सीधी रेखा", "वृत्ताकार", "आयताकार", "अनियमित"], a: 1, e: "धारा के चारों ओर क्षेत्र रेखाएँ वृत्ताकार होती हैं।"},
+        {q: "फ्लेमिंग का बायाँ हाथ नियम किसके लिए है?", o: ["जनित्र", "मोटर", "ट्रांसफॉर्मर", "फ्यूज"], a: 1, e: "बायाँ हाथ नियम मोटर की दिशा बताता है।"},
+        {q: "फ्लेमिंग का दायाँ हाथ नियम किसके लिए है?", o: ["मोटर", "जनित्र", "हीटर", "फ्यूज"], a: 1, e: "दायाँ हाथ नियम जनित्र के लिए है।"},
+        {q: "विद्युत मोटर का मुख्य सिद्धांत क्या है?", o: ["ऊष्मीय प्रभाव", "रासायनिक प्रभाव", "चुंबकीय प्रभाव", "प्रकाश प्रभाव"], a: 2, e: "धारा का चुंबकीय प्रभाव।"},
+        {q: "चुंबकीय क्षेत्र की SI इकाई क्या है?", o: ["टेस्ला", "वेबर", "एम्पियर", "वोल्ट"], a: 0, e: "चुंबकीय क्षेत्र टेस्ला में मापा जाता है।"},
+        {q: "चुंबकीय क्षेत्र रेखाएँ कभी एक-दूसरे को क्यों नहीं काटतीं?", o: ["ऊर्जा कम होती है", "दिशा एक होती है", "दो दिशाएँ एक बिंदु पर नहीं हो सकतीं", "कारण नहीं"], a: 2, e: "एक बिंदु पर दो दिशाएँ संभव नहीं।"},
+        {q: "सीधी धारा वहन करने वाले चालक के पास कंपास की सुई क्यों मुड़ती है?", o: ["ऊष्मा से", "चुंबकीय क्षेत्र से", "गुरुत्व से", "विद्युत से"], a: 1, e: "चालक चुंबकीय क्षेत्र बनाता है।"},
+        {q: "मोटर में विभाजक (कम्यूटेटर) का कार्य क्या है?", o: ["धारा रोकना", "धारा उलटना", "वोल्टेज बढ़ाना", "ऊर्जा संग्रह"], a: 1, e: "हर आधे चक्र में धारा की दिशा बदलता है।"},
+        {q: "धारा की दिशा जानने के लिए किस नियम का प्रयोग होता है?", o: ["फ्लेमिंग बायाँ", "फ्लेमिंग दायाँ", "दाहिने हाथ का अंगूठा नियम", "लेन्ज का नियम"], a: 2, e: "अंगूठा नियम दिशा बताता है।"},
+        {q: "मोटर में कुंडली किस धातु की होती है?", o: ["लोहे की", "ताँबे की", "एल्यूमिनियम", "कार्बन"], a: 1, e: "ताँबा अच्छा चालक है।"},
+        {q: "चुंबकीय क्षेत्र की तीव्रता अधिक कहाँ होती है?", o: ["दूर", "पास", "समान", "कहीं नहीं"], a: 1, e: "स्रोत के पास अधिक।"},
+        {q: "विद्युत जनित्र किस ऊर्जा को विद्युत में बदलता है?", o: ["ऊष्मा", "रासायनिक", "यांत्रिक", "प्रकाश"], a: 2, e: "यांत्रिक से विद्युत।"},
+        {q: "मोटर में ब्रश किससे बने होते हैं?", o: ["ताँबा", "लोहा", "कार्बन", "जस्ता"], a: 2, e: "कार्बन ब्रश प्रयुक्त होते हैं।"},
+        {q: "समानांतर तारों में धारा एक दिशा में हो तो वे—", o: ["दूर जाएँ", "आकर्षित हों", "अप्रभावित", "पिघलें"], a: 1, e: "समान दिशा में आकर्षण होता है।"},
+        {q: "चुंबकीय क्षेत्र रेखाएँ किससे निकलती हैं?", o: ["दक्षिण ध्रुव", "उत्तर ध्रुव", "बीच से", "कहीं से भी"], a: 1, e: "बाहर उत्तर से निकलती हैं।"},
+        {q: "चुंबकीय क्षेत्र रेखाएँ किसमें प्रवेश करती हैं?", o: ["उत्तर", "दक्षिण", "बीच", "हवा"], a: 1, e: "दक्षिण में प्रवेश।"},
+        {q: "मोटर में प्रयुक्त ऊर्जा का रूपांतरण है—", o: ["विद्युत→यांत्रिक", "यांत्रिक→विद्युत", "रासायनिक→विद्युत", "ऊष्मा→विद्युत"], a: 0, e: "मोटर विद्युत को यांत्रिक बनाती है।"},
+        {q: "जनित्र में प्रयुक्त नियम है—", o: ["बायाँ हाथ", "दायाँ हाथ", "ओम", "जूल"], a: 1, e: "दायाँ हाथ नियम।"},
+        {q: "चुंबकीय क्षेत्र की दिशा बताने का उपकरण—", o: ["वोल्टमीटर", "एमीटर", "कंपास", "थर्मामीटर"], a: 2, e: "कंपास दिशा बताता है।"},
+        {q: "मोटर में धारा किस प्रकार की होती है?", o: ["DC", "AC", "दोनों", "कोई नहीं"], a: 0, e: "साधारण DC मोटर।"},
+        {q: "चुंबकीय क्षेत्र रेखाएँ कैसी होती हैं?", o: ["खुली", "बंद", "सीधी", "टूटी"], a: 1, e: "बंद वक्र।"},
+        {q: "अधिक धारा से क्षेत्र—", o: ["घटता है", "बढ़ता है", "स्थिर", "शून्य"], a: 1, e: "धारा बढ़ने से क्षेत्र बढ़ता है।"},
+        {q: "मोटर में आर्मेचर क्या है?", o: ["ब्रश", "कुंडली", "ध्रुव", "फ्रेम"], a: 1, e: "घूमने वाली कुंडली।"},
+        {q: "चुंबकीय क्षेत्र किससे उत्पन्न हो सकता है?", o: ["धारा से", "चुंबक से", "दोनों से", "किसी से नहीं"], a: 2, e: "दोनों से।"},
+        {q: "मोटर में चुंबक क्यों लगाया जाता है?", o: ["घर्षण घटाने", "क्षेत्र बनाने", "धारा बढ़ाने", "गति घटाने"], a: 1, e: "चुंबकीय क्षेत्र के लिए।"},
+        {q: "जनित्र में उत्पन्न धारा—", o: ["DC", "AC", "स्थिर", "शून्य"], a: 1, e: "साधारण जनित्र AC देता है।"},
+
+        // Chemistry: Carbon (27-53)
+        {q: "कार्बन की संयोजकता कितनी है?", o: ["2", "3", "4", "5"], a: 2, e: "कार्बन चतुर्संयोजी है।"},
+        {q: "सहसंयोजक बंध बनता है—", o: ["इलेक्ट्रॉन देने से", "लेने से", "साझा करने से", "हटाने से"], a: 2, e: "साझा से सहसंयोजक।"},
+        {q: "संतृप्त यौगिकों में कौन-सा बंध होता है?", o: ["एकल", "द्वि", "त्रि", "आयनिक"], a: 0, e: "केवल एकल बंध।"},
+        {q: "असंतृप्त यौगिकों में होता है—", o: ["केवल एकल", "द्वि/त्रि", "आयनिक", "धात्विक"], a: 1, e: "द्वि या त्रि।"},
+        {q: "एल्केन का सामान्य सूत्र—", o: ["CnH2n", "CnH2n+2", "CnH2n−2", "CnHn"], a: 1, e: "एल्केन का सूत्र।"},
+        {q: "एथीन किस वर्ग का है?", o: ["एल्केन", "एल्कीन", "एल्काइन", "अल्कोहल"], a: 1, e: "एथीन एल्कीन।"},
+        {q: "मिथेन का सूत्र—", o: ["CH2", "CH4", "C2H4", "C2H6"], a: 1, e: "मिथेन CH4।"},
+        {q: "कार्बन यौगिक सामान्यतः—", o: ["आयनिक", "सहसंयोजक", "धात्विक", "कोई नहीं"], a: 1, e: "अधिकतर सहसंयोजक।"},
+        {q: "सहसंयोजक यौगिकों का गलनांक—", o: ["अधिक", "कम", "समान", "शून्य"], a: 1, e: "कम होता है।"},
+        {q: "एल्काइन में बंध—", o: ["एकल", "द्वि", "त्रि", "आयनिक"], a: 2, e: "त्रि बंध।"},
+        {q: "कार्बन श्रृंखलन (catenation) का कारण—", o: ["कम संयोजकता", "अधिक संयोजकता", "स्थिर C–C बंध", "आयन"], a: 2, e: "स्थिर C–C बंध।"},
+        {q: "एथेन का वर्ग—", o: ["एल्कीन", "एल्केन", "एल्काइन", "अम्ल"], a: 1, e: "एथेन एल्केन।"},
+        {q: "असंतृप्त यौगिक पहचान परीक्षण—", o: ["लाइम वाटर", "ब्रॉमीन जल", "फेलिंग", "बेनेडिक्ट"], a: 1, e: "ब्रॉमीन जल रंगहीन।"},
+        {q: "कार्बन के यौगिक पानी में—", o: ["अधिक घुलनशील", "कम घुलनशील", "पूर्ण", "नहीं"], a: 1, e: "कम घुलनशील।"},
+        {q: "एल्केन में हाइड्रोजन—", o: ["कम", "अधिकतम", "शून्य", "समान"], a: 1, e: "अधिकतम।"},
+        {q: "एथाइन का सूत्र—", o: ["C2H6", "C2H4", "C2H2", "CH4"], a: 2, e: "एथाइन।"},
+        {q: "सहसंयोजक यौगिक बिजली—", o: ["चलाते हैं", "नहीं चलाते", "कभी-कभी", "हमेशा"], a: 1, e: "चालक नहीं।"},
+        {q: "एल्कीन का सामान्य सूत्र—", o: ["CnH2n+2", "CnH2n", "CnH2n−2", "CnHn"], a: 1, e: "एल्कीन।"},
+        {q: "कार्बन का परमाणु क्रमांक—", o: ["4", "6", "8", "12"], a: 1, e: "6।"},
+        {q: "कार्बन के चारों ओर बंध कोण—", o: ["90°", "109.5°", "120°", "180°"], a: 1, e: "टेट्राहेड्रल।"},
+        {q: "मिथेन जलाने पर बनता है—", o: ["CO", "CO₂ + H₂O", "C", "O₂"], a: 1, e: "पूर्ण दहन।"},
+        {q: "कार्बन यौगिकों में बंध—", o: ["कमजोर", "मजबूत", "आयनिक", "धात्विक"], a: 1, e: "मजबूत सहसंयोजक।"},
+        {q: "एल्केन अभिक्रिया—", o: ["योग", "अपघटन", "प्रतिस्थापन", "ऑक्सीकरण"], a: 2, e: "प्रतिस्थापन।"},
+        {q: "एल्कीन अभिक्रिया—", o: ["प्रतिस्थापन", "योग", "अपघटन", "कोई नहीं"], a: 1, e: "योग।"},
+        {q: "एथेन में कार्बन—", o: ["1", "2", "3", "4"], a: 1, e: "दो।"},
+        {q: "कार्बन यौगिकों की विविधता का कारण—", o: ["कम संयोजकता", "श्रृंखलन", "आयन", "धातु"], a: 1, e: "श्रृंखलन।"},
+        {q: "असंतृप्त यौगिकों में हाइड्रोजन—", o: ["अधिकतम", "कम", "शून्य", "समान"], a: 1, e: "कम।"},
+
+        // Biology: Heredity (54-80)
+        {q: "वंशागति का अध्ययन कहलाता है—", o: ["पारिस्थितिकी", "आनुवंशिकी", "शरीर क्रिया", "वर्गिकी"], a: 1, e: "Genetics।"},
+        {q: "गुणसूत्र पाए जाते हैं—", o: ["साइटोप्लाज्म", "केंद्रक", "कोशिका भित्ति", "माइटोकॉन्ड्रिया"], a: 1, e: "केंद्रक में।"},
+        {q: "जीन किस पर स्थित होते हैं?", o: ["DNA", "RNA", "प्रोटीन", "लिपिड"], a: 0, e: "DNA पर।"},
+        {q: "प्रभावी लक्षण का प्रतीक—", o: ["छोटा अक्षर", "बड़ा अक्षर", "अंक", "चिह्न"], a: 1, e: "Capital letter।"},
+        {q: "अप्रभावी लक्षण—", o: ["हमेशा दिखता", "कभी नहीं", "दबा रहता", "अधिक शक्तिशाली"], a: 2, e: "दबा रहता है।"},
+        {q: "मेंडल ने प्रयोग किया—", o: ["गेहूँ", "मटर", "मक्का", "चावल"], a: 1, e: "मटर।"},
+        {q: "एकल संकरण में संतान का अनुपात—", o: ["1:1", "3:1", "9:3:3:1", "2:1"], a: 1, e: "फीनोटाइप 3:1।"},
+        {q: "जीन का वैकल्पिक रूप—", o: ["गुणसूत्र", "एलील", "DNA", "RNA"], a: 1, e: "एलील।"},
+        {q: "पुरुष में लैंगिक गुणसूत्र—", o: ["XX", "XY", "YY", "XO"], a: 1, e: "XY।"},
+        {q: "स्त्री में लैंगिक गुणसूत्र—", o: ["XY", "XO", "XX", "YY"], a: 2, e: "XX।"},
+        {q: "संतान का लिंग निर्धारित करता है—", o: ["माता", "पिता", "दोनों", "कोई नहीं"], a: 1, e: "पिता।"},
+        {q: "मेंडल का नियम—", o: ["वर्चस्व", "पृथक्करण", "स्वतंत्र वर्गीकरण", "सभी"], a: 3, e: "सभी।"},
+        {q: "जीन के जोड़े अलग होते हैं—", o: ["निषेचन में", "गैमीट निर्माण में", "भ्रूण में", "जन्म पर"], a: 1, e: "गैमीट निर्माण में।"},
+        {q: "गुणसूत्र संख्या आधी होती है—", o: ["देह कोशिका में", "गैमीट में", "भ्रूण में", "युग्मज में"], a: 1, e: "गैमीट में।"},
+        {q: "वंशानुगत लक्षण का उदाहरण—", o: ["पढ़ना", "लिखना", "आँखों का रंग", "खेलना"], a: 2, e: "आनुवंशिक।"},
+        {q: "अर्जित लक्षण—", o: ["विरासत में मिलते", "नहीं मिलते", "जीन से", "DNA से"], a: 1, e: "विरासत में नहीं।"},
+        {q: "मेंडल का द्विलक्षण संकरण अनुपात—", o: ["3:1", "1:1", "9:3:3:1", "2:1"], a: 2, e: "9:3:3:1।"},
+        {q: "DNA का पूरा नाम—", o: ["डिऑक्सीराइबोन्यूक्लिक अम्ल", "राइबोन्यूक्लिक अम्ल", "न्यूक्लिक", "प्रोटीन"], a: 0, e: "DNA।"},
+        {q: "जीन का कार्य—", o: ["ऊर्जा देना", "लक्षण नियंत्रित", "भोजन बनाना", "श्वसन"], a: 1, e: "लक्षण नियंत्रण।"},
+        {q: "गैमीट बनते हैं—", o: ["माइटोसिस से", "मियोसिस से", "दोनों से", "नहीं"], a: 1, e: "मियोसिस।"},
+        {q: "वंशानुगत रोग—", o: ["पोलियो", "मलेरिया", "हीमोफीलिया", "टीबी"], a: 2, e: "हीमोफीलिया।"},
+        {q: "जीनोटाइप दर्शाता है—", o: ["बाहरी रूप", "जीन संयोजन", "रंग", "आकार"], a: 1, e: "जीन संयोजन।"},
+        {q: "फीनोटाइप दर्शाता है—", o: ["जीन", "DNA", "बाहरी लक्षण", "गुणसूत्र"], a: 2, e: "बाहरी लक्षण।"},
+        {q: "संतान में विविधता का कारण—", o: ["माइटोसिस", "मियोसिस", "निषेचन नहीं", "स्थिरता"], a: 1, e: "मियोसिस।"},
+        {q: "एलील जोड़ी कहाँ होती है?", o: ["अलग गुणसूत्र", "समजात गुणसूत्र", "कोशिका भित्ति", "साइटोप्लाज्म"], a: 1, e: "समजात गुणसूत्र।"},
+        {q: "मेंडल के नियम लागू होते हैं—", o: ["केवल पौधों पर", "केवल जानवरों पर", "सभी लैंगिक जीवों पर", "नहीं"], a: 2, e: "सभी लैंगिक जीव।"},
+        {q: "गुणसूत्रों की खोज—", o: ["मेंडल", "मॉर्गन", "वाटसन", "क्रिक"], a: 1, e: "मॉर्गन (लिंकेंज कार्य)।"}
+    ];
+
+    let score = 0, answered = 0, seconds = 3600; // 60 mins
+    let timerId;
+
+    function buildQuiz() {
+        const list = document.getElementById('questions-list');
+        questions.forEach((data, i) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+            card.innerHTML = `
+                <span class="q-text">${i + 1}. ${data.q}</span>
+                <div id="group-${i}">
+                    ${data.o.map((opt, oi) => `<button class="option" onclick="check(${i}, ${oi})">${opt}</button>`).join('')}
+                </div>
+                <div id="expl-${i}" class="explanation"><b>व्याख्या:</b> ${data.e}</div>
+            `;
+            list.appendChild(card);
+        });
+        startTimer();
+    }
+
+    function check(qi, oi) {
+        const btns = document.getElementById(`group-${qi}`).getElementsByTagName('button');
+        if (oi === questions[qi].a) {
+            btns[oi].classList.add('correct');
+            score++;
+        } else {
+            btns[oi].classList.add('wrong');
+            btns[questions[qi].a].classList.add('correct');
+        }
+        document.getElementById(`expl-${qi}`).style.display = 'block';
+        for (let b of btns) b.classList.add('locked');
+        answered++;
+        if (answered === questions.length) showResult();
+    }
+
+    function startTimer() {
+        timerId = setInterval(() => {
+            seconds--;
+            let m = Math.floor(seconds / 60);
+            let s = seconds % 60;
+            document.getElementById('timer-box').innerText = `समय शेष: ${m}:${s < 10 ? '0' + s : s}`;
+            if (seconds <= 0) showResult();
+        }, 1000);
+    }
+
+    function showResult() {
+        clearInterval(timerId);
+        document.getElementById('quiz-ui').style.display = 'none';
+        document.getElementById('final-screen').style.display = 'block';
+        document.getElementById('final-score-text').innerText = `आपका स्कोर: ${score} / 80`;
+    }
+
+    function renderCertificate() {
+        const name = document.getElementById('studentName').value;
+        if (!name) return alert("नाम लिखें!");
+        document.getElementById('final-screen').style.display = 'none';
+        document.getElementById('certificate-display').style.display = 'block';
+        document.getElementById('cert-user-name').innerText = name;
+        document.getElementById('cert-score').innerText = score;
+        document.getElementById('cert-percent').innerText = ((score / 80) * 100).toFixed(1);
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString('hi-IN');
+    }
+
+    buildQuiz();
+</script>
+
+</body>
+</html>
