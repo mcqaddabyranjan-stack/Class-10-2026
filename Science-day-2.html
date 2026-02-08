@@ -5,77 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Day 2 - Science 80 MCQ Quiz</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --info: #3498db;
-            --bg: #f4f7f6;
-        }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        #quiz-wrapper { max-width: 850px; width: 100%; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
-        #timer-box { font-size: 1.5rem; font-weight: bold; color: var(--danger); text-align: center; position: sticky; top: 0; background: white; padding: 12px; z-index: 1000; border: 2px solid var(--danger); border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .q-card { background: #fff; padding: 20px; margin-bottom: 25px; border-radius: 10px; border: 1px solid #ddd; border-left: 6px solid var(--primary); }
-        .q-text { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; display: block; color: #333; }
-        .option { display: block; width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem; text-align: left; transition: 0.2s; }
-        .option:hover:not(.locked) { background-color: #f8f9fa; border-color: var(--primary); }
-        .correct { background-color: var(--success) !important; color: white !important; border-color: #1e8449 !important; }
-        .wrong { background-color: var(--danger) !important; color: white !important; border-color: #c0392b !important; }
+        :root { --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        #quiz-wrapper { max-width: 850px; width: 100%; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        #timer-box { font-size: 1.5rem; font-weight: bold; color: var(--danger); text-align: center; position: sticky; top: 0; background: white; padding: 10px; z-index: 1000; border: 2px solid var(--danger); border-radius: 10px; margin-bottom: 20px; }
+        .q-card { background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 10px; border: 1px solid #ddd; border-left: 6px solid var(--primary); }
+        .option { display: block; width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; text-align: left; }
+        .correct { background-color: var(--success) !important; color: white !important; }
+        .wrong { background-color: var(--danger) !important; color: white !important; }
         .locked { pointer-events: none; }
-        .explanation { display: none; margin-top: 15px; padding: 12px; background: #eef7ff; border-radius: 6px; font-style: italic; color: #2c3e50; border-left: 4px solid var(--info); font-size: 0.95rem; }
-        
-        #final-screen, #certificate-display { display: none; text-align: center; padding: 40px; }
-        #certificate-display { border: 15px double var(--primary); background: #fff; margin-top: 20px; padding: 50px; position: relative; }
-        .btn-large { background: var(--primary); color: white; padding: 16px 35px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 25px; font-weight: bold; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #certificate-display, #certificate-display * { visibility: visible; }
-            #certificate-display { position: absolute; left: 0; top: 0; width: 100%; border: 5px solid #000; }
-            .no-print { display: none; }
-        }
+        .explanation { display: none; margin-top: 10px; padding: 10px; background: #eef7ff; border-radius: 6px; border-left: 4px solid #3498db; }
+        #final-screen, #certificate-display { display: none; text-align: center; padding: 30px; }
+        #certificate-display { border: 15px double var(--primary); background: #fff; padding: 40px; }
+        .btn-large { background: var(--primary); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 20px; }
+        @media print { .no-print { display: none; } #certificate-display { border: 5px solid #000; } }
     </style>
 </head>
 <body>
 
 <div id="quiz-wrapper">
     <div id="quiz-ui">
-        <div class="header">
-            <h1>Day 2 - विज्ञान मेगा क्विज़</h1>
-            <p>विद्युत धारा का चुंबकीय प्रभाव + कार्बन + आनुवंशिकता</p>
-        </div>
+        <div style="text-align:center;"><h1>Day 2 - विज्ञान मेगा क्विज़</h1></div>
         <div id="timer-box">समय शेष: 60:00</div>
         <div id="questions-list"></div>
     </div>
 
     <div id="final-screen">
-        <h2 style="color: var(--success); font-size: 2.5rem;">Day 2 क्विज़ समाप्त!</h2>
-        <p id="final-score-text" style="font-size: 2rem; font-weight: bold; margin: 20px 0;"></p>
-        <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; border: 1px solid #ddd;">
-            <p style="font-size: 1.2rem;">सर्टिफिकेट के लिए अपना नाम लिखें:</p>
-            <input type="text" id="studentName" placeholder="पूरा नाम यहाँ लिखें" style="padding: 15px; width: 90%; max-width: 400px; border-radius: 8px; border: 2px solid #ccc; font-size: 1.1rem;"><br>
-            <button class="btn-large" onclick="renderCertificate()">सर्टिफिकेट देखें</button>
-        </div>
+        <h2 style="color: var(--success);">क्विज़ समाप्त!</h2>
+        <p id="final-score-text" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <input type="text" id="studentName" placeholder="अपना नाम यहाँ लिखें" style="padding: 12px; width: 80%; border: 1px solid #ccc; border-radius: 5px;"><br>
+        <button class="btn-large" onclick="renderCertificate()">सर्टिफिकेट देखें</button>
     </div>
 
     <div id="certificate-display">
-        <h1 style="color: #b8860b; font-size: 3.5rem; margin: 0; font-family: serif;">सफलता प्रमाण पत्र</h1>
-        <p style="font-size: 1.4rem; margin-top: 20px;">यह प्रमाणित किया जाता है कि</p>
-        <h2 id="cert-user-name" style="font-size: 2.8rem; text-decoration: underline; margin: 20px 0; color: #333;"></h2>
-        <p style="font-size: 1.3rem;">ने <b>"Day 2 - विज्ञान मेगा क्विज़"</b> को सफलतापूर्वक पूर्ण किया।</p>
-        <div style="margin: 35px 0; padding: 20px; background: #f0f0f0; border-radius: 10px; display: inline-block;">
-            <span style="font-size: 1.5rem;">प्राप्तांक: <strong id="cert-score"></strong> / 80</span><br>
-            <span style="font-size: 1.5rem;">प्रतिशत: <strong id="cert-percent"></strong>%</span>
-        </div>
-        <p style="font-size: 1.1rem; margin-top: 30px;">दिनांक: <span id="cert-date"></span></p>
-        <button class="btn-large no-print" onclick="window.print()" style="background: #27ae60;">सर्टिफिकेट डाउनलोड / प्रिंट करें</button>
+        <h1 style="color: #b8860b;">सफलता प्रमाण पत्र</h1>
+        <p>प्रमाणित किया जाता है कि</p>
+        <h2 id="cert-user-name" style="text-decoration: underline;"></h2>
+        <p>ने <b>"Day 2 - विज्ञान मेगा क्विज़"</b> को पूर्ण किया।</p>
+        <p>प्राप्तांक: <strong id="cert-score"></strong> / 80 | प्रतिशत: <strong id="cert-percent"></strong>%</p>
+        <p>दिनांक: <span id="cert-date"></span></p>
+        <button class="btn-large no-print" onclick="window.print()" style="background: #27ae60;">प्रिंट / PDF सेव करें</button>
     </div>
 </div>
 
 <script>
     const questions = [
-        // Physics: Magnetic Effect (1-26)
+        // 1-26 Physics
         {q: "धारा वहन करने वाले चालक के चारों ओर चुंबकीय क्षेत्र किस रूप में होता है?", o: ["सीधी रेखा", "वृत्ताकार", "आयताकार", "अनियमित"], a: 1, e: "धारा के चारों ओर क्षेत्र रेखाएँ वृत्ताकार होती हैं।"},
         {q: "फ्लेमिंग का बायाँ हाथ नियम किसके लिए है?", o: ["जनित्र", "मोटर", "ट्रांसफॉर्मर", "फ्यूज"], a: 1, e: "बायाँ हाथ नियम मोटर की दिशा बताता है।"},
         {q: "फ्लेमिंग का दायाँ हाथ नियम किसके लिए है?", o: ["मोटर", "जनित्र", "हीटर", "फ्यूज"], a: 1, e: "दायाँ हाथ नियम जनित्र के लिए है।"},
@@ -102,8 +77,7 @@
         {q: "चुंबकीय क्षेत्र किससे उत्पन्न हो सकता है?", o: ["धारा से", "चुंबक से", "दोनों से", "किसी से नहीं"], a: 2, e: "दोनों से।"},
         {q: "मोटर में चुंबक क्यों लगाया जाता है?", o: ["घर्षण घटाने", "क्षेत्र बनाने", "धारा बढ़ाने", "गति घटाने"], a: 1, e: "चुंबकीय क्षेत्र के लिए।"},
         {q: "जनित्र में उत्पन्न धारा—", o: ["DC", "AC", "स्थिर", "शून्य"], a: 1, e: "साधारण जनित्र AC देता है।"},
-
-        // Chemistry: Carbon (27-53)
+        // 27-53 Chemistry
         {q: "कार्बन की संयोजकता कितनी है?", o: ["2", "3", "4", "5"], a: 2, e: "कार्बन चतुर्संयोजी है।"},
         {q: "सहसंयोजक बंध बनता है—", o: ["इलेक्ट्रॉन देने से", "लेने से", "साझा करने से", "हटाने से"], a: 2, e: "साझा से सहसंयोजक।"},
         {q: "संतृप्त यौगिकों में कौन-सा बंध होता है?", o: ["एकल", "द्वि", "त्रि", "आयनिक"], a: 0, e: "केवल एकल बंध।"},
@@ -131,8 +105,7 @@
         {q: "एथेन में कार्बन—", o: ["1", "2", "3", "4"], a: 1, e: "दो।"},
         {q: "कार्बन यौगिकों की विविधता का कारण—", o: ["कम संयोजकता", "श्रृंखलन", "आयन", "धातु"], a: 1, e: "श्रृंखलन।"},
         {q: "असंतृप्त यौगिकों में हाइड्रोजन—", o: ["अधिकतम", "कम", "शून्य", "समान"], a: 1, e: "कम।"},
-
-        // Biology: Heredity (54-80)
+        // 54-80 Biology
         {q: "वंशागति का अध्ययन कहलाता है—", o: ["पारिस्थितिकी", "आनुवंशिकी", "शरीर क्रिया", "वर्गिकी"], a: 1, e: "Genetics।"},
         {q: "गुणसूत्र पाए जाते हैं—", o: ["साइटोप्लाज्म", "केंद्रक", "कोशिका भित्ति", "माइटोकॉन्ड्रिया"], a: 1, e: "केंद्रक में।"},
         {q: "जीन किस पर स्थित होते हैं?", o: ["DNA", "RNA", "प्रोटीन", "लिपिड"], a: 0, e: "DNA पर।"},
@@ -162,7 +135,7 @@
         {q: "गुणसूत्रों की खोज—", o: ["मेंडल", "मॉर्गन", "वाटसन", "क्रिक"], a: 1, e: "मॉर्गन (लिंकेंज कार्य)।"}
     ];
 
-    let score = 0, answered = 0, seconds = 3600; // 60 mins
+    let score = 0, answered = 0, seconds = 3600;
     let timerId;
 
     function buildQuiz() {
@@ -170,44 +143,33 @@
         questions.forEach((data, i) => {
             const card = document.createElement('div');
             card.className = 'q-card';
-            card.innerHTML = `
-                <span class="q-text">${i + 1}. ${data.q}</span>
-                <div id="group-${i}">
-                    ${data.o.map((opt, oi) => `<button class="option" onclick="check(${i}, ${oi})">${opt}</button>`).join('')}
-                </div>
-                <div id="expl-${i}" class="explanation"><b>व्याख्या:</b> ${data.e}</div>
-            `;
+            card.innerHTML = `<strong>${i + 1}. ${data.q}</strong><div id="group-${i}">
+                ${data.o.map((opt, oi) => `<button class="option" onclick="check(${i}, ${oi})">${opt}</button>`).join('')}
+            </div><div id="expl-${i}" class="explanation">व्याख्या: ${data.e}</div>`;
             list.appendChild(card);
         });
-        startTimer();
+        startClock();
     }
 
     function check(qi, oi) {
         const btns = document.getElementById(`group-${qi}`).getElementsByTagName('button');
-        if (oi === questions[qi].a) {
-            btns[oi].classList.add('correct');
-            score++;
-        } else {
-            btns[oi].classList.add('wrong');
-            btns[questions[qi].a].classList.add('correct');
-        }
+        if (oi === questions[qi].a) { btns[oi].classList.add('correct'); score++; }
+        else { btns[oi].classList.add('wrong'); btns[questions[qi].a].classList.add('correct'); }
         document.getElementById(`expl-${qi}`).style.display = 'block';
         for (let b of btns) b.classList.add('locked');
-        answered++;
-        if (answered === questions.length) showResult();
+        answered++; if (answered === questions.length) end();
     }
 
-    function startTimer() {
+    function startClock() {
         timerId = setInterval(() => {
             seconds--;
-            let m = Math.floor(seconds / 60);
-            let s = seconds % 60;
-            document.getElementById('timer-box').innerText = `समय शेष: ${m}:${s < 10 ? '0' + s : s}`;
-            if (seconds <= 0) showResult();
+            let m = Math.floor(seconds/60), s = seconds%60;
+            document.getElementById('timer-box').innerText = `समय शेष: ${m}:${s<10?'0'+s:s}`;
+            if (seconds<=0) end();
         }, 1000);
     }
 
-    function showResult() {
+    function end() {
         clearInterval(timerId);
         document.getElementById('quiz-ui').style.display = 'none';
         document.getElementById('final-screen').style.display = 'block';
@@ -221,12 +183,11 @@
         document.getElementById('certificate-display').style.display = 'block';
         document.getElementById('cert-user-name').innerText = name;
         document.getElementById('cert-score').innerText = score;
-        document.getElementById('cert-percent').innerText = ((score / 80) * 100).toFixed(1);
+        document.getElementById('cert-percent').innerText = ((score/80)*100).toFixed(1);
         document.getElementById('cert-date').innerText = new Date().toLocaleDateString('hi-IN');
     }
-
     buildQuiz();
 </script>
-
 </body>
-</html>
+    </html>
+    
