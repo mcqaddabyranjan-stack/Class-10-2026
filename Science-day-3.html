@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 3 - Science 80 MCQ Quiz</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --bg: #f4f7f6;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        #quiz-wrapper { max-width: 850px; width: 100%; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
+        #timer-box { font-size: 1.5rem; font-weight: bold; color: var(--danger); text-align: center; position: sticky; top: 0; background: white; padding: 12px; z-index: 1000; border: 2px solid var(--danger); border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .q-card { background: #fff; padding: 20px; margin-bottom: 25px; border-radius: 10px; border: 1px solid #ddd; border-left: 6px solid var(--primary); }
+        .q-text { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; display: block; color: #333; }
+        .option { display: block; width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 1rem; text-align: left; transition: 0.2s; }
+        .option:hover:not(.locked) { background-color: #f8f9fa; border-color: var(--primary); }
+        .correct { background-color: var(--success) !important; color: white !important; border-color: #1e8449 !important; }
+        .wrong { background-color: var(--danger) !important; color: white !important; border-color: #c0392b !important; }
+        .locked { pointer-events: none; }
+        .explanation { display: none; margin-top: 15px; padding: 12px; background: #eef7ff; border-radius: 6px; font-style: italic; color: #2c3e50; border-left: 4px solid var(--info); font-size: 0.95rem; }
+        #final-screen, #certificate-display { display: none; text-align: center; padding: 40px; }
+        #certificate-display { border: 15px double var(--primary); background: #fff; margin-top: 20px; padding: 50px; position: relative; }
+        .btn-large { background: var(--primary); color: white; padding: 16px 35px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 25px; font-weight: bold; }
+        @media print { body * { visibility: hidden; } #certificate-display, #certificate-display * { visibility: visible; } #certificate-display { position: absolute; left: 0; top: 0; width: 100%; border: 5px solid #000; } .no-print { display: none; } }
+    </style>
+</head>
+<body>
+
+<div id="quiz-wrapper">
+    <div id="quiz-ui">
+        <div class="header">
+            <h1>Day 3 - विज्ञान मेगा क्विज़</h1>
+            <p>Physics: घरेलू परिपथ | Chemistry: धातु-अधातु | Biology: नियंत्रण-समन्वय</p>
+        </div>
+        <div id="timer-box">समय शेष: 60:00</div>
+        <div id="questions-list"></div>
+    </div>
+
+    <div id="final-screen">
+        <h2 style="color: var(--success); font-size: 2.5rem;">Day 3 क्विज़ समाप्त!</h2>
+        <p id="final-score-text" style="font-size: 2rem; font-weight: bold; margin: 20px 0;"></p>
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; border: 1px solid #ddd;">
+            <p style="font-size: 1.2rem;">सर्टिफिकेट के लिए अपना नाम लिखें:</p>
+            <input type="text" id="studentName" placeholder="पूरा नाम यहाँ लिखें" style="padding: 15px; width: 90%; max-width: 400px; border-radius: 8px; border: 2px solid #ccc; font-size: 1.1rem;"><br>
+            <button class="btn-large" onclick="renderCertificate()">सर्टिफिकेट देखें</button>
+        </div>
+    </div>
+
+    <div id="certificate-display">
+        <h1 style="color: #b8860b; font-size: 3.5rem; margin: 0; font-family: serif;">सफलता प्रमाण पत्र</h1>
+        <p style="font-size: 1.4rem; margin-top: 20px;">यह प्रमाणित किया जाता है कि</p>
+        <h2 id="cert-user-name" style="font-size: 2.8rem; text-decoration: underline; margin: 20px 0; color: #333;"></h2>
+        <p style="font-size: 1.3rem;">ने <b>"Day 3 - विज्ञान मेगा क्विज़ (80 MCQ)"</b> को सफलतापूर्वक पूर्ण किया।</p>
+        <div style="margin: 35px 0; padding: 20px; background: #f0f0f0; border-radius: 10px; display: inline-block;">
+            <span style="font-size: 1.5rem;">प्राप्तांक: <strong id="cert-score"></strong> / 80</span><br>
+            <span style="font-size: 1.5rem;">प्रतिशत: <strong id="cert-percent"></strong>%</span>
+        </div>
+        <p style="font-size: 1.1rem; margin-top: 30px;">दिनांक: <span id="cert-date"></span></p>
+        <button class="btn-large no-print" onclick="window.print()" style="background: #27ae60;">सर्टिफिकेट डाउनलोड / प्रिंट करें</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        // Physics (1-26)
+        {q: "घरेलू विद्युत परिपथ में फ्यूज का मुख्य कार्य क्या होता है?", o: ["धारा बढ़ाना", "उपकरण को चालू करना", "अधिक धारा से सुरक्षा करना", "वोल्टेज घटाना"], a: 2, e: "फ्यूज अधिक धारा पर पिघलकर परिपथ तोड़ देता है।"},
+        {q: "घरेलू वायरिंग में उपकरण समानांतर क्रम में क्यों जोड़े जाते हैं?", o: ["धारा बढ़ाने के लिए", "समान वोल्टेज प्राप्त करने के लिए", "ऊर्जा बचाने के लिए", "तार की लंबाई घटाने के लिए"], a: 1, e: "समानांतर क्रम में सभी उपकरणों को समान वोल्टेज मिलता है।"},
+        {q: "फ्यूज सामान्यतः किस धातु के बने होते हैं?", o: ["ताँबा", "लोहा", "टिन–सीसा मिश्रधातु", "एल्युमिनियम"], a: 2, e: "कम गलनांक के कारण।"},
+        {q: "घरेलू विद्युत परिपथ में अर्थिंग का उद्देश्य क्या है?", o: ["धारा बढ़ाना", "झटका से सुरक्षा", "वोल्टेज घटाना", "शक्ति बढ़ाना"], a: 1, e: "अर्थिंग झटके से बचाती है।"},
+        {q: "MCB का पूरा नाम क्या है?", o: ["Main Circuit Board", "Miniature Circuit Breaker", "Manual Control Button", "Main Control Breaker"], a: 1, e: "MCB स्वतः परिपथ तोड़ता है।"},
+        {q: "घरेलू उपकरणों में प्रयुक्त धारा का प्रकार क्या है?", o: ["DC", "AC", "दोनों", "कोई नहीं"], a: 1, e: "घरों में AC सप्लाई होती है।"},
+        {q: "शॉर्ट सर्किट की स्थिति कब उत्पन्न होती है?", o: ["धारा कम होने पर", "उपकरण बंद होने पर", "लाइव और न्यूट्रल तार संपर्क में आने पर", "अर्थिंग होने पर"], a: 2, e: "प्रतिरोध बहुत कम हो जाता है।"},
+        {q: "घरेलू परिपथ में लाइव तार का रंग सामान्यतः क्या होता है?", o: ["हरा", "काला", "लाल", "नीला"], a: 2, e: "लाइव तार लाल रंग का।"},
+        {q: "घरेलू वायरिंग में न्यूट्रल तार का कार्य क्या है?", o: ["धारा देना", "धारा वापस ले जाना", "सुरक्षा देना", "वोल्टेज बढ़ाना"], a: 1, e: "धारा की वापसी का पथ।"},
+        {q: "फ्यूज को किस तार में लगाया जाता है?", o: ["न्यूट्रल", "अर्थ", "लाइव", "सभी में"], a: 2, e: "लाइव तार में फ्यूज लगाया जाता है।"},
+        {q: "अधिक शक्ति वाले उपकरणों के लिए तार मोटे क्यों होते हैं?", o: ["सुंदरता के लिए", "कम प्रतिरोध हेतु", "कम वोल्टेज हेतु", "धारा रोकने हेतु"], a: 1, e: "मोटे तार का प्रतिरोध कम होता है।"},
+        {q: "अर्थिंग के लिए किस धातु की प्लेट उपयोग होती है?", o: ["ताँबा", "लोहा", "एल्यूमिनियम", "चाँदी"], a: 0, e: "ताँबा अच्छा चालक है।"},
+        {q: "घरेलू मीटर किसे मापता है?", o: ["धारा", "वोल्टेज", "शक्ति", "विद्युत ऊर्जा"], a: 3, e: "ऊर्जा (kWh) मापता है।"},
+        {q: "1 यूनिट विद्युत ऊर्जा किसके बराबर है?", o: ["100 W", "1000 W", "1 kWh", "1 Wh"], a: 2, e: "1 यूनिट = 1 kWh।"},
+        {q: "MCB फ्यूज से बेहतर क्यों है?", o: ["सस्ता है", "बार-बार बदला नहीं जाता", "सुंदर है", "भारी होता है"], a: 1, e: "MCB reset किया जा सकता है।"},
+        {q: "घरेलू परिपथ में ओवरलोडिंग का कारण क्या है?", o: ["कम उपकरण", "एक साथ कई उपकरण", "अर्थिंग", "मोटा तार"], a: 1, e: "अधिक धारा प्रवाहित होती है।"},
+        {q: "घरेलू सप्लाई का मानक वोल्टेज लगभग कितना है?", o: ["110 V", "220 V", "440 V", "12 V"], a: 1, e: "भारत में 220 V।"},
+        {q: "फ्यूज का सिद्धांत किस प्रभाव पर आधारित है?", o: ["चुंबकीय", "रासायनिक", "ऊष्मीय", "प्रकाश"], a: 2, e: "ऊष्मीय प्रभाव।"},
+        {q: "अर्थिंग तार का रंग सामान्यतः क्या होता है?", o: ["लाल", "नीला", "हरा", "काला"], a: 2, e: "हरा रंग।"},
+        {q: "घरेलू वायरिंग में किस क्रम का प्रयोग होता है?", o: ["श्रेणी क्रम", "समानांतर क्रम", "मिश्रित", "कोई नहीं"], a: 1, e: "समानांतर।"},
+        {q: "शॉर्ट सर्किट से क्या खतरा होता है?", o: ["आग लगना", "उपकरण सुरक्षित", "धारा कम", "वोल्टेज शून्य"], a: 0, e: "आग लग सकती है।"},
+        {q: "अधिक धारा बहने पर MCB क्या करता है?", o: ["धारा बढ़ाता है", "परिपथ तोड़ देता है", "वोल्टेज बढ़ाता है", "कुछ नहीं"], a: 1, e: "स्वतः ट्रिप हो जाता है।"},
+        {q: "घरेलू परिपथ में स्विच किस तार में लगाया जाता है?", o: ["न्यूट्रल", "अर्थ", "लाइव", "दोनों"], a: 2, e: "लाइव तार में।"},
+        {q: "विद्युत झटका क्यों लगता है?", o: ["धारा प्रवाह से", "वोल्टेज से", "ऊर्जा से", "शक्ति से"], a: 0, e: "शरीर से धारा गुजरने पर।"},
+        {q: "अर्थिंग न होने पर उपकरण का बाहरी भाग—", o: ["सुरक्षित", "गर्म", "आवेशित हो सकता है", "टूट जाता है"], a: 2, e: "झटके का खतरा।"},
+        {q: "घरेलू परिपथ में सुरक्षा का सबसे महत्वपूर्ण साधन—", o: ["स्विच", "बल्ब", "फ्यूज/MCB", "प्लॅग"], a: 2, e: "सुरक्षा के लिए।"},
+
+        // Chemistry (27-53)
+        {q: "धातुएँ सामान्यतः कैसी होती हैं?", o: ["भंगुर", "चालक", "गैसीय", "नर्म"], a: 1, e: "धातुएँ ऊष्मा व विद्युत की चालक होती हैं।"},
+        {q: "अधातुएँ सामान्यतः कैसी होती हैं?", o: ["चालक", "चमकीली", "कुचालक", "तन्य"], a: 2, e: "अधातुएँ कुचालक होती हैं।"},
+        {q: "लोहा किस प्रकार की धातु है?", o: ["क्षारीय", "संक्रमण", "अल्कली", "अधातु"], a: 1, e: "संक्रमण धातु।"},
+        {q: "धातुओं में तन्यता का अर्थ क्या है?", o: ["तार बनाना", "चादर बनाना", "गलन", "कठोरता"], a: 1, e: "चादर बनाने की क्षमता।"},
+        {q: "धातुओं की चालकता का कारण क्या है?", o: ["प्रोटॉन", "न्यूट्रॉन", "मुक्त इलेक्ट्रॉन", "आयन"], a: 2, e: "मुक्त इलेक्ट्रॉन।"},
+        {q: "अधातु का उदाहरण कौन-सा है?", o: ["ताँबा", "सोडियम", "गंधक", "लोहा"], a: 2, e: "गंधक अधातु है।"},
+        {q: "धातु और अधातु की अभिक्रिया से क्या बनता है?", o: ["अम्ल", "क्षार", "लवण", "गैस"], a: 2, e: "लवण बनता है।"},
+        {q: "धातुएँ प्रायः कौन-सा आयन बनाती हैं?", o: ["ऋणायन", "धनायन", "दोनों", "कोई नहीं"], a: 1, e: "धनायन।"},
+        {q: "अधातुएँ प्रायः कौन-सा आयन बनाती हैं?", o: ["धनायन", "ऋणायन", "दोनों", "कोई नहीं"], a: 1, e: "ऋणायन।"},
+        {q: "सोडियम पानी के साथ—", o: ["प्रतिक्रिया नहीं करता", "तीव्र प्रतिक्रिया करता है", "धीरे प्रतिक्रिया करता है", "गैस नहीं बनाता"], a: 1, e: "बहुत तीव्र।"},
+        {q: "धातुओं का चमकीला होना कहलाता है—", o: ["तन्यता", "आघातवर्धनीयता", "धात्विक चमक", "चालकता"], a: 2, e: "धात्विक चमक।"},
+        {q: "आघातवर्धनीयता किससे संबंधित है?", o: ["तार बनाना", "चादर बनाना", "घुलनशीलता", "गलन"], a: 0, e: "तार बनाने की क्षमता।"},
+        {q: "सबसे हल्की धातु कौन-सी है?", o: ["सोडियम", "पोटैशियम", "लिथियम", "कैल्शियम"], a: 2, e: "लिथियम।"},
+        {q: "पारा किस अवस्था में पाया जाता है?", o: ["ठोस", "द्रव", "गैस", "प्लाज्मा"], a: 1, e: "द्रव धातु।"},
+        {q: "धातुओं का उपयोग क्यों अधिक होता है?", o: ["महँगी होने से", "कठोर व चालक होने से", "रंगीन होने से", "हल्की होने से"], a: 1, e: "उपयोगी गुण।"},
+        {q: "अधातु गंधक की प्रकृति—", o: ["चालक", "कुचालक", "तन्य", "चमकीली"], a: 1, e: "कुचालक।"},
+        {q: "धातु का उदाहरण जो बिजली का अच्छा चालक है—", o: ["लोहा", "ताँबा", "एल्युमिनियम", "सभी"], a: 3, e: "सभी चालक।"},
+        {q: "धातुएँ प्रायः किस प्रकार के बर्तन में प्रयोग होती हैं?", o: ["प्लास्टिक", "काँच", "स्टील", "लकड़ी"], a: 2, e: "स्टील धातु है।"},
+        {q: "अधातुओं का उपयोग माचिस में—", o: ["फॉस्फोरस", "सोडियम", "लोहा", "ताँबा"], a: 0, e: "फॉस्फोरस अधातु।"},
+        {q: "धातुओं की ध्वनि उत्पन्न करने की क्षमता—", o: ["तन्यता", "चालकता", "ध्वन्यता", "आघातवर्धनीयता"], a: 2, e: "ध्वन्यता।"},
+        {q: "अधातुएँ सामान्यतः—", o: ["ठोस", "द्रव", "गैसीय", "सभी"], a: 3, e: "सभी अवस्थाएँ।"},
+        {q: "धातुओं का गलनांक सामान्यतः—", o: ["कम", "अधिक", "समान", "शून्य"], a: 1, e: "अधिक।"},
+        {q: "एल्यूमिनियम का उपयोग तार में क्यों नहीं?", o: ["भारी", "कुचालक", "कम चालक", "अधिक प्रतिरोध"], a: 3, e: "प्रतिरोध अधिक।"},
+        {q: "ताँबा किस कारण लोकप्रिय है?", o: ["सस्ता", "अच्छा चालक", "हल्का", "रंगीन"], a: 1, e: "अच्छी चालकता।"},
+        {q: "धातुओं की प्रतिक्रिया ऑक्सीजन से होकर बनाती है—", o: ["अम्ल", "क्षार", "ऑक्साइड", "लवण"], a: 2, e: "ऑक्साइड।"},
+        {q: "अधातु ऑक्सीजन के साथ—", o: ["अम्लीय ऑक्साइड", "क्षारीय ऑक्साइड", "लवण", "गैस"], a: 0, e: "अम्लीय ऑक्साइड।"},
+        {q: "लोहे में जंग लगना किसका उदाहरण है?", o: ["दहन", "संक्षारण", "अपघटन", "संयोजन"], a: 1, e: "संक्षारण।"},
+
+        // Biology (54-80)
+        {q: "शरीर में नियंत्रण एवं समन्वय का कार्य कौन करता है?", o: ["केवल तंत्रिका तंत्र", "केवल हार्मोन", "तंत्रिका एवं हार्मोन दोनों", "केवल मस्तिष्क"], a: 2, e: "दोनों मिलकर।"},
+        {q: "हार्मोन कहाँ बनते हैं?", o: ["हड्डी में", "ग्रंथियों में", "मांसपेशी में", "रक्त में"], a: 1, e: "अंतःस्रावी ग्रंथियाँ।"},
+        {q: "हार्मोन सीधे किसमें मिलते हैं?", o: ["पसीना", "मूत्र", "रक्त", "लसीका"], a: 2, e: "रक्त में।"},
+        {q: "पिट्यूटरी ग्रंथि को क्या कहते हैं?", o: ["सहायक ग्रंथि", "मुख्य ग्रंथि", "मास्टर ग्रंथि", "सहायक हार्मोन"], a: 2, e: "मास्टर ग्रंथि।"},
+        {q: "इंसुलिन हार्मोन किससे संबंधित है?", o: ["वृद्धि", "रक्त शर्करा", "थायरॉयड", "प्रजनन"], a: 1, e: "शर्करा नियंत्रण।"},
+        {q: "थायरॉयड हार्मोन की कमी से कौन-सा रोग होता है?", o: ["मधुमेह", "घेंघा", "बौनापन", "मोटापा"], a: 1, e: "घेंघा।"},
+        {q: "एड्रिनल ग्रंथि किस स्थिति में सक्रिय होती है?", o: ["विश्राम", "नींद", "भय/तनाव", "भोजन"], a: 2, e: "आपात स्थिति।"},
+        {q: "पौधों में नियंत्रण किसके द्वारा होता है?", o: ["तंत्रिका", "हार्मोन", "रक्त", "श्वसन"], a: 1, e: "पादप हार्मोन।"},
+        {q: "ऑक्सिन हार्मोन किससे संबंधित है?", o: ["जड़ वृद्धि", "तना वृद्धि", "पत्ती झड़ना", "फूल"], a: 1, e: "तना वृद्धि।"},
+        {q: "जिबरेलिन का कार्य—", o: ["फूल झड़ना", "वृद्धि बढ़ाना", "पत्ती मुड़ना", "बीज नष्ट"], a: 1, e: "वृद्धि।"},
+        {q: "तंत्रिका तंत्र का कार्य—", o: ["धीमी प्रतिक्रिया", "त्वरित प्रतिक्रिया", "वृद्धि", "प्रजनन"], a: 1, e: "तेज प्रतिक्रिया।"},
+        {q: "रिफ्लेक्स क्रिया नियंत्रित होती है—", o: ["मस्तिष्क से", "मेरुरज्जु से", "हृदय से", "फेफड़े से"], a: 1, e: "मेरुरज्जु।"},
+        {q: "हार्मोन की क्रिया कैसी होती है?", o: ["बहुत तेज", "धीमी पर स्थायी", "तात्कालिक", "क्षणिक"], a: 1, e: "प्रभाव लंबे समय तक।"},
+        {q: "मधुमेह रोग किस हार्मोन की कमी से होता है?", o: ["थायरॉक्सिन", "एड्रिनलिन", "इंसुलिन", "टेस्टोस्टेरोन"], a: 2, e: "इंसुलिन।"},
+        {q: "पादप हार्मोन कहाँ बनते हैं?", o: ["जड़", "तना", "पत्ती", "सभी भाग"], a: 3, e: "विभिन्न भागों में।"},
+        {q: "थायरॉयड ग्रंथि कहाँ स्थित होती है?", o: ["सिर", "गला", "पेट", "हृदय"], a: 1, e: "गले में।"},
+        {q: "तंत्रिका कोशिका को क्या कहते हैं?", o: ["न्यूरॉन", "डेंड्राइट", "एक्सॉन", "सिनेप्स"], a: 0, e: "न्यूरॉन।"},
+        {q: "तंत्रिका संदेश किस रूप में होते हैं?", o: ["रासायनिक", "विद्युत", "ऊष्मीय", "प्रकाश"], a: 1, e: "विद्युत संकेत।"},
+        {q: "सिनेप्स का कार्य—", o: ["हार्मोन बनाना", "संदेश संप्रेषण", "रक्त प्रवाह", "श्वसन"], a: 1, e: "संदेश पहुँचाना।"},
+        {q: "एड्रिनलिन हार्मोन को क्या कहते हैं?", o: ["ग्रोथ हार्मोन", "आपात हार्मोन", "पाचन हार्मोन", "लैंगिक हार्मोन"], a: 1, e: "आपात हार्मोन।"},
+        {q: "पौधों में स्पर्श अनुक्रिया कहलाती है—", o: ["फोटोट्रॉपिज्म", "जियोट्रॉपिज्म", "थिग्मोट्रॉपिज्म", "हाइड्रोट्रॉपिज्म"], a: 2, e: "स्पर्श अनुक्रिया।"},
+        {q: "हार्मोन की अधिकता से—", o: ["कोई प्रभाव नहीं", "रोग हो सकते हैं", "ऊर्जा बढ़ती है", "वृद्धि रुकती है"], a: 1, e: "असंतुलन से रोग।"},
+        {q: "तंत्रिका तंत्र के भाग—", o: ["मस्तिष्क", "मेरुरज्जु", "तंत्रिकाएँ", "सभी"], a: 3, e: "सभी।"},
+        {q: "पादप हार्मोन एथिलीन किससे संबंधित है?", o: ["वृद्धि", "फल पकना", "पत्ती गिरना", "जड़"], a: 1, e: "फल पकना।"},
+        {q: "हार्मोनल नियंत्रण किसमें अधिक होता है?", o: ["रिफ्लेक्स", "वृद्धि", "त्वरित क्रिया", "मांसपेशी"], a: 1, e: "वृद्धि।"},
+        {q: "तंत्रिका तंत्र किसमें नहीं पाया जाता?", o: ["मनुष्य", "मछली", "पौधे", "पक्षी"], a: 2, e: "पौधों में नहीं।"},
+        {q: "नियंत्रण एवं समन्वय का उद्देश्य—", o: ["गति", "संतुलन", "शरीर क्रियाओं का नियमन", "ऊर्जा"], a: 2, e: "शरीर क्रियाओं का समन्वय।"}
+    ];
+
+    let score = 0, answered = 0, seconds = 3600;
+    let timerId;
+
+    function buildQuiz() {
+        const list = document.getElementById('questions-list');
+        questions.forEach((data, i) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+            card.innerHTML = `<strong>${i + 1}. ${data.q}</strong><div id="group-${i}">
+                ${data.o.map((opt, oi) => `<button class="option" onclick="check(${i}, ${oi})">${opt}</button>`).join('')}
+            </div><div id="expl-${i}" class="explanation"><b>व्याख्या:</b> ${data.e}</div>`;
+            list.appendChild(card);
+        });
+        startTimer();
+    }
+
+    function check(qi, oi) {
+        const btns = document.getElementById(`group-${qi}`).getElementsByTagName('button');
+        if (oi === questions[qi].a) { btns[oi].classList.add('correct'); score++; }
+        else { btns[oi].classList.add('wrong'); btns[questions[qi].a].classList.add('correct'); }
+        document.getElementById(`expl-${qi}`).style.display = 'block';
+        for (let b of btns) b.classList.add('locked');
+        answered++;
+        if (answered === questions.length) end();
+    }
+
+    function startTimer() {
+        timerId = setInterval(() => {
+            seconds--;
+            let m = Math.floor(seconds / 60);
+            let s = seconds % 60;
+            document.getElementById('timer-box').innerText = `समय शेष: ${m}:${s < 10 ? '0' + s : s}`;
+            if (seconds <= 0) end();
+        }, 1000);
+    }
+
+    function end() {
+        clearInterval(timerId);
+        document.getElementById('quiz-ui').style.display = 'none';
+        document.getElementById('final-screen').style.display = 'block';
+        document.getElementById('final-score-text').innerText = `आपका स्कोर: ${score} / 80`;
+    }
+
+    function renderCertificate() {
+        const name = document.getElementById('studentName').value;
+        if (!name) return alert("नाम लिखें!");
+        document.getElementById('final-screen').style.display = 'none';
+        document.getElementById('certificate-display').style.display = 'block';
+        document.getElementById('cert-user-name').innerText = name;
+        document.getElementById('cert-score').innerText = score;
+        document.getElementById('cert-percent').innerText = ((score / 80) * 100).toFixed(1);
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString('hi-IN');
+    }
+
+    buildQuiz();
+</script>
+
+</body>
+</html>
