@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 10 Math - वास्तविक संख्याएँ Quiz</title>
+    <style>
+        :root { --primary: #1a73e8; --success: #27ae60; --danger: #e74c3c; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        #quiz-wrapper { max-width: 850px; width: 100%; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
+        #timer-box { font-size: 1.5rem; font-weight: bold; color: var(--danger); text-align: center; position: sticky; top: 0; background: white; padding: 12px; z-index: 1000; border: 2px solid var(--danger); border-radius: 10px; margin-bottom: 25px; }
+        .q-card { background: #fff; padding: 20px; margin-bottom: 25px; border-radius: 10px; border: 1px solid #ddd; border-left: 6px solid var(--primary); }
+        .option { display: block; width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; text-align: left; font-size: 1rem; transition: 0.2s; }
+        .option:hover:not(.locked) { background-color: #f1f3f4; border-color: var(--primary); }
+        .correct { background-color: var(--success) !important; color: white !important; border-color: #1e8449 !important; }
+        .wrong { background-color: var(--danger) !important; color: white !important; border-color: #c0392b !important; }
+        .locked { pointer-events: none; }
+        #final-screen, #certificate-display { display: none; text-align: center; padding: 40px; }
+        #certificate-display { border: 15px double var(--primary); background: #fff; padding: 50px; position: relative; }
+        .btn-large { background: var(--primary); color: white; padding: 16px 35px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 25px; font-weight: bold; }
+        @media print { .no-print { display: none; } #certificate-display { border: 5px solid #000; } }
+    </style>
+</head>
+<body>
+
+<div id="quiz-wrapper">
+    <div id="quiz-ui">
+        <div class="header">
+            <h1>कक्षा 10 गणित (BSEB)</h1>
+            <p>अध्याय 1: वास्तविक संख्याएँ (40 MCQs)</p>
+        </div>
+        <div id="timer-box">समय शेष: 30:00</div>
+        <div id="questions-list"></div>
+    </div>
+
+    <div id="final-screen">
+        <h2 style="color: var(--success); font-size: 2.5rem;">क्विज़ संपन्न!</h2>
+        <p id="final-score-text" style="font-size: 2rem; font-weight: bold; margin: 20px 0;"></p>
+        <div style="background: #eef2f7; padding: 30px; border-radius: 12px;">
+            <p style="font-size: 1.2rem;">सर्टिफिकेट के लिए अपना नाम लिखें:</p>
+            <input type="text" id="studentName" placeholder="यहाँ नाम लिखें" style="padding: 15px; width: 90%; max-width: 400px; border-radius: 8px; border: 2px solid #ccc; font-size: 1.1rem;"><br>
+            <button class="btn-large" onclick="renderCertificate()">सर्टिफिकेट देखें</button>
+        </div>
+    </div>
+
+    <div id="certificate-display">
+        <h1 style="color: #b8860b; font-size: 3rem; margin: 0; font-family: serif;">सफलता प्रमाण पत्र</h1>
+        <p style="font-size: 1.3rem;">प्रमाणित किया जाता है कि</p>
+        <h2 id="cert-user-name" style="font-size: 2.5rem; text-decoration: underline; color: #333;"></h2>
+        <p style="font-size: 1.2rem;">ने <b>"वास्तविक संख्याएँ (गणित)"</b> की ऑनलाइन परीक्षा <br> सफलतापूर्वक पूर्ण की।</p>
+        <div style="margin: 30px 0; padding: 15px; background: #f0f0f0; border-radius: 10px; display: inline-block;">
+            <span style="font-size: 1.4rem;">स्कोर: <strong id="cert-score"></strong> / 40</span> | 
+            <span style="font-size: 1.4rem;">प्रतिशत: <strong id="cert-percent"></strong>%</span>
+        </div>
+        <p>दिनांक: <span id="cert-date"></span></p>
+        <button class="btn-large no-print" onclick="window.print()">प्रिंट / PDF सेव करें</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {q: "π कैसी संख्या है?", o: ["परिमेय संख्या", "अपरिमेय संख्या", "पूर्णांक संख्या", "कोई नहीं"], a: 1},
+        {q: "दो क्रमिक सम संख्याओं का HCF क्या होगा?", o: ["1", "2", "3", "5"], a: 1},
+        {q: "यूक्लिड विभाजन एल्गोरिथ्म क्या निकालने की तकनीक है?", o: ["ल.स.", "म.स.", "भागफल", "शेषफल"], a: 1},
+        {q: "निम्न में कौन अपरिमेय संख्या नहीं है?", o: ["√7", "√2/√5", "√75/√48", "√3 × √7"], a: 2},
+        {q: "दो संख्याओं का गुणनफल 8670 और HCF 17 है, तो LCM होगा:", o: ["102", "85", "510", "410"], a: 2},
+        {q: "6/15 का दशमलव प्रसार कैसा होगा?", o: ["शांत", "अशांत", "आवर्ती", "अनावर्ती"], a: 0},
+        {q: "निम्न में कौन अभाज्य संख्या है?", o: ["15", "23", "12", "75"], a: 1},
+        {q: "दो परिमेय संख्याओं के बीच कितनी परिमेय संख्याएँ हो सकती हैं?", o: ["1", "2", "3", "अनंत"], a: 3},
+        {q: "√2 है एक:", o: ["परिमेय", "अपरिमेय", "प्राकृतिक", "कोई नहीं"], a: 1},
+        {q: "सबसे छोटी अभाज्य संख्या कौन सी है?", o: ["1", "2", "3", "0"], a: 1},
+        {q: "सबसे छोटी भाज्य संख्या कौन सी है?", o: ["1", "2", "4", "6"], a: 2},
+        {q: "0.121121112... कैसी संख्या है?", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "प्राकृतिक"], a: 1},
+        {q: "सह-अभाज्य संख्याओं का HCF होता है:", o: ["1", "2", "3", "0"], a: 0},
+        {q: "11/25 का दशमलव प्रसार कैसा होगा?", o: ["शांत", "अशांत", "आवर्ती", "कोई नहीं"], a: 0},
+        {q: "√3 एक संख्या है:", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "प्राकृतिक"], a: 1},
+        {q: "2 तथा 2.5 के बीच की अपरिमेय संख्या है:", o: ["√11", "√5", "√22.5", "√12.5"], a: 1},
+        {q: "6, 8 और 22 का LCM और HCF का अनुपात है:", o: ["132:1", "2:22", "4:3", "12:1"], a: 0},
+        {q: "a = bq + r में r के लिए कौन सा कथन सही है?", o: ["0 < r < b", "0 ≤ r ≤ b", "0 ≤ r < b", "r > b"], a: 2},
+        {q: "निम्न में कौन परिमेय संख्या है?", o: ["√3", "2√2/√2", "4+√5", "√6"], a: 1},
+        {q: "5005 के अभाज्य गुणनखंडों की संख्या है:", o: ["2", "4", "6", "7"], a: 1},
+        {q: "किसी पूर्णांक m के लिए सम संख्या का रूप है:", o: ["m+2", "2m+1", "2m", "2m-1"], a: 2},
+        {q: "किसी पूर्णांक m के लिए विषम संख्या का रूप है:", o: ["m", "m+1", "2m+1", "2m"], a: 2},
+        {q: "√10 × √15 बराबर है:", o: ["5√6", "6√5", "√30", "√25"], a: 0},
+        {q: "1.34 को परिमेय संख्या के रूप में लिखें:", o: ["134/10", "67/50", "13/40", "134/1000"], a: 1},
+        {q: "3 + 2√5 कैसी संख्या है?", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "कोई नहीं"], a: 1},
+        {q: "2³ / (2³ × 5²) का दशमलव प्रसार कैसा है?", o: ["शांत", "अशांत", "आवर्ती", "कोई नहीं"], a: 0},
+        {q: "0.23 (बार) को p/q रूप में लिखें:", o: ["23/99", "23/100", "23/9", "23/10"], a: 0},
+        {q: "√8 कैसी संख्या है?", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "प्राकृतिक"], a: 1},
+        {q: "144 के अभाज्य गुणनखंड में 2 का घातांक है:", o: ["3", "4", "5", "6"], a: 1},
+        {q: "यदि p एक अभाज्य संख्या है, तो √p होगी:", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "कोई नहीं"], a: 1},
+        {q: "दो परिमेय संख्याओं का गुणनफल हमेशा होता है:", o: ["परिमेय", "अपरिमेय", "अभाज्य", "कोई नहीं"], a: 0},
+        {q: "एक परिमेय और एक अपरिमेय संख्या का योग होता है:", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "प्राकृतिक"], a: 1},
+        {q: "17/24 का दशमलव प्रसार कैसा होगा?", o: ["शांत", "अशांत", "आवर्ती", "कोई नहीं"], a: 1},
+        {q: "11/15 का दशमलव प्रसार होगा:", o: ["शांत", "अशांत", "आवर्ती", "कोई नहीं"], a: 1},
+        {q: "π/2 कैसी संख्या है?", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "प्राकृतिक"], a: 1},
+        {q: "3√3 है:", o: ["परिमेय", "अपरिमेय", "पूर्णांक", "कोई नहीं"], a: 1},
+        {q: "वास्तविक संख्याएँ कितने प्रकार की होती हैं?", o: ["1", "2", "3", "4"], a: 1},
+        {q: "निम्न में से कौन अभाज्य संख्या है?", o: ["8", "9", "11", "15"], a: 2},
+        {q: "2.12 है एक:", o: ["परिमेय संख्या", "अपरिमेय संख्या", "पूर्णांक संख्या", "कोई नहीं"], a: 0},
+        {q: "n² - 1, 8 से विभाज्य है, यदि n है एक:", o: ["पूर्णांक", "प्राकृतिक", "विषम संख्या", "सम संख्या"], a: 2}
+    ];
+
+    let score = 0, answered = 0, secondsLeft = 1800;
+    let timerId;
+
+    function buildQuiz() {
+        const list = document.getElementById('questions-list');
+        questions.forEach((data, i) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+            card.innerHTML = `<strong>${i + 1}. ${data.q}</strong>
+                <div id="grp-${i}">${data.o.map((opt, oi) => `<button class="option" onclick="validate(${i}, ${oi})">${opt}</button>`).join('')}</div>`;
+            list.appendChild(card);
+        });
+        startClock();
+    }
+
+    function validate(qi, oi) {
+        const btns = document.getElementById(`grp-${qi}`).getElementsByTagName('button');
+        if (oi === questions[qi].a) { btns[oi].classList.add('correct'); score++; }
+        else { btns[oi].classList.add('wrong'); btns[questions[qi].a].classList.add('correct'); }
+        for (let b of btns) b.classList.add('locked');
+        answered++;
+        if (answered === questions.length) finish();
+    }
+
+    function startClock() {
+        timerId = setInterval(() => {
+            secondsLeft--;
+            let m = Math.floor(secondsLeft/60), s = secondsLeft%60;
+            document.getElementById('timer-box').innerText = `समय शेष: ${m}:${s<10?'0'+s:s}`;
+            if (secondsLeft <= 0) finish();
+        }, 1000);
+    }
+
+    function finish() {
+        clearInterval(timerId);
+        document.getElementById('quiz-ui').style.display = 'none';
+        document.getElementById('final-screen').style.display = 'block';
+        document.getElementById('final-score-text').innerText = `आपका स्कोर: ${score} / 40`;
+    }
+
+    function renderCertificate() {
+        const name = document.getElementById('studentName').value;
+        if (!name) return alert("नाम लिखें!");
+        document.getElementById('final-screen').style.display = 'none';
+        document.getElementById('certificate-display').style.display = 'block';
+        document.getElementById('cert-user-name').innerText = name;
+        document.getElementById('cert-score').innerText = score;
+        document.getElementById('cert-percent').innerText = ((score/40)*100).toFixed(1);
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString('hi-IN');
+    }
+    buildQuiz();
+</script>
+</body>
+</html>
